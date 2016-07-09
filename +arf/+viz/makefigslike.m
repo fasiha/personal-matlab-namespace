@@ -5,8 +5,9 @@ function [] = makefigslike(modelfig, otherfigs)
 %   MAKEFIGSLIKE(MODEL) assumes OTHERS is all open figures
 %
 %   MAKEFIGSLIKE() treats GCF as MODEL.
+  import arf.viz.*
   if ~exist('modelfig', 'var') || isempty(modelfig), modelfig = gcf(); end
-  if ~exist('otherfigs', 'var') || isempty(otherfigs), otherfigs = viz.getallfigs(); end
+  if ~exist('otherfigs', 'var') || isempty(otherfigs), otherfigs = getallfigs(); end
 
   otherfigs.set('position', modelfig.get('position'));
 end
