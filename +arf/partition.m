@@ -2,9 +2,9 @@ function [chunks] = partition(x, sizes, overlaps, func, discardMisshapen)
 %PARTITION flexibly chunks an array into sub-arrays
 %
 %  C = PARTITION(X, SIZES) Here, PARTITION is given a multi-dimensional array X
-%  and a vector of SIZES (with as many elements as dimensions of the array), and
-%  it will return a cell array containing sub-arrays of the input array whose
-%  size is specified by the sizes vector.
+%  and a vector of SIZES (nominally NUMEL(SIZES) == NDIMS(X)), and it will
+%  return a cell array containing sub-arrays of the input array whose size is
+%  specified by SIZES.
 %  >> x = reshape(1 : 20, [4 5]);
 %  >> c = partition(x, [2 3]);
 %  `c` is a cell array containing 2 by 3 chunks of the origin 4 by 5 input
@@ -17,29 +17,22 @@ function [chunks] = partition(x, sizes, overlaps, func, discardMisshapen)
 %  [2x3 double]    [2x2 double]
 %  [2x3 double]    [2x2 double]
 %
-%  SIZES may have fewer elements than NDIMS(X), in which case it is padded to
-%  have NDIMS(X) elements by using the trailing sizes in SIZE(X). In other
-%  words, omitted dimensions will have no partitioning. If SIZES has more elements
-%  than NDIMS(X), the extra entries are ignored.
+%  When NUMEL(SIZES) < NDIMS(X), SIZES is padded using SIZE(X). In other words,
+%  omitted dimensions will have no partitioning. If NUMEL(SIZES) > NDIMS(X), the
+%  extra entries are ignored.
 %
-%  The DIMth element of SIZES must be between 1 (chunks will have length 1, along
-%  the DIMth dimension) and SIZE(X, DIM). I.e., 1 <= SIZES(DIM) <= SIZE(X, DIM).
-%  This is enforced, so one may use INF to denote "as big a chunk size as
-%  possible", i.e., no chunking along this dimension. (If incomplete, the
-%  automatically-expanded version of SIZES is guaranteed to meet these
-%  requirements.)
+%  For each DIM dimension, 1 <= SIZES(DIM) <= SIZE(X, DIM) is enforced, so one
+%  may use INF to denote "as big a chunk size as possible", i.e., no chunking
+%  along this dimension.
 %
 %  By default, the partitioned chunks are non-overlapping. However,
 %  C = PARTITION(X, SIZES, OVERLAPS) allows one to specify the overlap between
-%  chunks. If OVERLAPS is empty or omitted, it defaults to a vector of zeros:
-%  ZEROS(1, NDIMS(X)). Like SIZES, OVERLAPS nominally has NDIMS(X) entries to
-%  specify the overlap in each dimension. If the provided OVERLAPS has fewer
-%  than NDIMS(X) entries, the remaining overlaps are taken to be the default of
-%  0 (no overlap in those trailing dimensions).  If NUMEL(OVERLAPS) > NDIMS(X),
-%  the extras are ignored. The DIMth overlap must be strictly less than the size
-%  along that dimension, i.e., OVERLAPS(DIM) < SIZE(X, DIM). However, there is
-%  no lower limit to OVERLAPS' entries. Negative overlaps will result in skipped
-%  data.
+%  chunks. If OVERLAPS is empty or omitted, it defaults to a NDIMS(X)-long
+%  vector of zeros. If NUMEL(OVERLAPS) < NDIMS(X) entries, the remaining
+%  overlaps default to 0 (no overlap in those trailing dimensions).  If
+%  NUMEL(OVERLAPS) > NDIMS(X), the extras are ignored. OVERLAPS(DIM) < SIZE(X,
+%  DIM) is enforced. However, there is no lower limit to OVERLAPS' entries:
+%  negative overlaps will result in skipped data.
 %
 %  For example: one has a 5 by 5 array and wishes to have the 2 by 2 chunks from
 %  each corner (northeast, southeast, southwest, and northwest corners),
@@ -59,12 +52,12 @@ function [chunks] = partition(x, sizes, overlaps, func, discardMisshapen)
 %      16    20
 %      20    25
 %
-%  Sometimes, one wants to run some function on sub-array chunks. Rather than
-%  just receive the chunks wholesale, one can pass a function handle:
+%  Sometimes, one wants to run some function on sub-array chunks and obtain the
+%  results. One can pass in a function handle:
 %  C = PARTITION(X, SIZES, OVERLAPS, FUNC) will return a cell array C whose
-%  entries contain the function handle FUNC applied to each chunk. FUNC should
-%  be a function of a single argument, the chunk itself. If FUNC is omitted or
-%  empty, the default is the identity function (@(x) x).
+%  entries contain the output of function handle FUNC applied to each chunk.
+%  FUNC should be a function of a single argument, the chunk itself. If FUNC is
+%  omitted or empty, the default is the identity function (@(x) x).
 %
 %  For example, to find the total sum of each chunk from the previous example:
 %  >> partition(x, [2 2], [-1 -1], @(chunk) sum(chunk(:)))
@@ -76,8 +69,8 @@ function [chunks] = partition(x, sizes, overlaps, func, discardMisshapen)
 %  chunks with smaller size than requested. This can be overridden:
 %  C = PARTITION(X, SIZES, OVERLAPS, FUNC, DISCARDMISSHAPEN) for boolean
 %  DISCARDMISSHAPEN (default FALSE) will, when TRUE, ensure all elements of the
-%  returned cell array have size governed by SIZES (either as passed in or as
-%  adjusted by PARTITION internally). From the first example above:
+%  returned cell array have size specified by SIZES by omitting chunks at the
+%  edges of X. From the first example above:
 %  >> c = partition(x, [2 3])
 %      [2x3 double]    [2x2 double]
 %      [2x3 double]    [2x2 double]
@@ -88,11 +81,11 @@ function [chunks] = partition(x, sizes, overlaps, func, discardMisshapen)
 %  previously containing 2 by 2 chunks, is discarded.
 %
 %  Though all examples here have used two-dimensional X, PARTITION is
-%  dimensionality-agnostic and works as well on column vectors as on
+%  dimensionality-agnostic, and works the same on column vectors as on
 %  high-dimensional arrays.
 %
 %  This function was inspired by Clojure's `partition` and `partition-all`
-%  functions [1], [2], but generalized to the multidimensional case.
+%  functions [1], [2], but generalized for multidimensional arrays.
 %
 %  [1] See https://clojuredocs.org/clojure.core/partition
 %  [2] Ditto https://clojuredocs.org/clojure.core/partition-all
