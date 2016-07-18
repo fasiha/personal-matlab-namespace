@@ -8,6 +8,13 @@ if nargin == 0
   return;
 end
 
+if ~exist('dim', 'var') || isempty(dim)
+  dim = find(size(x) > 1, 1, 'first');
+  if isempty(dim)
+    dim = 1;
+  end
+end
+
 if any(imag(x(:)))
   re = pyfiltfilt2(b, a, real(x), dim);
   im = pyfiltfilt2(b, a, imag(x), dim);

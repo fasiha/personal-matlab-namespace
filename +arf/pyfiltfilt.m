@@ -1,7 +1,12 @@
 function res = pyfiltfilt(b, a, x, dim)
 import arf.pyfiltfilt;
 
-if ~exist('dim', 'var') || isempty(dim), dim = 1; end
+if ~exist('dim', 'var') || isempty(dim)
+  dim = find(size(x) > 1, 1, 'first');
+  if isempty(dim)
+    dim = 1;
+  end
+end
 
 
 if any(imag(x(:)))
