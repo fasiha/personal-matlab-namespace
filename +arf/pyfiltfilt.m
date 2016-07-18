@@ -1,6 +1,9 @@
 function res = pyfiltfilt(b, a, x, dim)
 import arf.pyfiltfilt;
 
+if ~exist('dim', 'var') || isempty(dim), dim = 1; end
+
+
 if any(imag(x(:)))
   re = pyfiltfilt(b, a, real(x), dim);
   im = pyfiltfilt(b, a, imag(x), dim);
