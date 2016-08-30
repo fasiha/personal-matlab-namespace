@@ -118,7 +118,7 @@ function [stftArr, fVec, tVec] = stft(data, window, varargin)
   if ~twosided
     realIdx = fVec >= 0;
     fVec = fVec(realIdx);
-    stftArr = stftArr(realIdx, :);
+    stftArr = real(stftArr(realIdx, :));
   end
 
   %% Plot if no output arguments requested

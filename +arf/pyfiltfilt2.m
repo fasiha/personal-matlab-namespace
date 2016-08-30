@@ -39,6 +39,8 @@ assert(fid>0);
 res = cast(fread(fid, inf, class(x)), 'like', x);
 fclose(fid);
 
+delete(fname);
+
 res = reshape(res, size(x));
 
 end
